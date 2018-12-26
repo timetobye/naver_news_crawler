@@ -30,9 +30,8 @@ Daily News crawler & Topic Modeling
   
 * 업무 과정 중 파편적으로 진행헀던 부분을 Toy Project를 하면서 정리해보고 싶었다.
 
-* 한국어 자연어 처리 대표 library인 konlpy가 진화를 하는 중
-  - koshort : https://github.com/koshort/koshort
-  - konlpy를 할 때는 최신 단어 처리가 어려웠는데 koshort를 이용해서 향상된 자연어 처리를 해보고 싶다.
+* 한국어 자연어 처리 대표 library인 konlpy 사용
+  - konlpy에서 mecab 사용 예정
 
 ## Toy_Project 일정
 
@@ -83,3 +82,7 @@ Daily News crawler & Topic Modeling
 ### programming
 * crawler, nlp 경험치 증가
 * clean code, pep8 적용 여부 확인
+
+## 기타
+
+- 작업하다 시간이 남을 경우 n-gram 학습 후 적용 범위 확인
