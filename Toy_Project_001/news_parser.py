@@ -50,7 +50,7 @@ class DailyNewsCrawling:
         return news_page_soup
 
     def _save_file(self, name, input_data):
-        with open(name, 'a') as f:
+        with open(name, 'a', encoding='UTF-8') as f:
             for input_value in input_data:
                 f.write(input_value + '\n')
 
