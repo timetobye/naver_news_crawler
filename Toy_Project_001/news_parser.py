@@ -85,7 +85,7 @@ class DailyNewsCrawling:
         return journal_main_link_dict
 
     def _add_today_date(self, journal_main_link_list):
-        current_datetime = datetime.now() - timedelta(days=2) # 현재 시간 계산해서 nn시 이전이면 전날 것으로 계산하게 만들 것
+        current_datetime = datetime.now() - timedelta(days=1) # 현재 시간 계산해서 nn시 이전이면 전날 것으로 계산하게 만들 것
         today_information = '&date=' + current_datetime.strftime("%Y%m%d")
 
         for num in range(len(journal_main_link_list)):
@@ -94,12 +94,19 @@ class DailyNewsCrawling:
         return journal_main_link_list
 
     def _replace_unused_word(self, text):
-        text = text.replace("\n", "")
-        text = text.replace("ㆍ", "")
-        text = text.replace("▶", "")
-        text = text.replace("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", "")
-        text = text.replace("/", "")
-        text = text.replace("무단전재 및 재배포 금지", "")
+
+        def replace_all(sentence, dic):
+            for i, j in dic.items():
+                sentence = sentence.replace(i, j)
+            return sentence
+
+        replace_words_dict = dict([("\n", ""),
+                                   ("ㆍ", ""),
+                                   ("▶", ""),
+                                   ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
+                                   ("/", ""),
+                                   ("무단전재 및 재배포 금지", "")])
+        text = replace_all(text, replace_words_dict)
 
         cleaned_text = re.sub('[a-zA-Z]', "", text)
         cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
@@ -145,7 +152,7 @@ class DailyNewsCrawling:
             news_url_source = self._get_uploaded_url(news_source)
             parsing_url += news_url_source
 
-            # break
+            break
 
         parsing_url = list(OrderedDict.fromkeys(parsing_url))
 
