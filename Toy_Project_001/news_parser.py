@@ -99,14 +99,18 @@ class DailyNewsCrawling:
 
         return journal_main_link_dict
 
-    def _add_today_date(self, journal_main_link_list):
-        current_datetime = datetime.now() - timedelta(days=1) # 현재 시간 계산해서 nn시 이전이면 전날 것으로 계산하게 만들 것
-        today_information = '&date=' + current_datetime.strftime("%Y%m%d")
+    def _add_today_date(self, press_list):
+        week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
+        find_day = date(self.year, self.month, self.day).weekday()
+        if 'sun' == week[find_day]:
+            raise ValueError('sunday 뉴스는 구할 수 없습니다. 다른 날을 입력해 주세요.')
+        else:
+            search_date = f'&date{find_date}'
+        for num in range(len(press_list)):
+            press_list[num] = press_list[num] + search_date
 
-        for num in range(len(journal_main_link_list)):
-            journal_main_link_list[num] = journal_main_link_list[num] + today_information
-
-        return journal_main_link_list
+        return press_list
 
     def _replace_unused_word(self, text):
 
