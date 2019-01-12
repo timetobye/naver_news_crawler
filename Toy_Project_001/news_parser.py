@@ -5,28 +5,43 @@ from bs4 import BeautifulSoup
 from collections import OrderedDict
 
 
+def get_html(url):
+    pages = requests.get(url)
+    page_soup = BeautifulSoup(pages.text, 'html.parser')
+
+    return page_soup
+
+
 class DailyNewsCrawling:
 
-    NEWS_URL = 'https://news.naver.com/main/officeList.nhn'
-    NAVER_NEWS = 'https://news.naver.com/'
-    NEWS_TYPE = '&listType=paper'
-    OUTPUT_URL = 'output_url.txt'
-    OUTPUT_TEXT = 'output_text.txt'
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
 
-    def __init__(self):
-        pass
+    def get_news_url(self):
 
-    def get_ten_journal_url(self):
-        journal_main_link_list = []
-        news_page_soup = self._get_news_html(self.NEWS_URL)
-        parsing_ten_journal_url = news_page_soup.find_all('div', id="groupOfficeList")
-        parsing_ten_journal_url = parsing_ten_journal_url[0]
-        journal_link = parsing_ten_journal_url.find_all('a', limit=10)
+        """
+        1. 10개 신문사의 주소를 얻는다.
+        2. 10개의 주소에서 각 신문사별 n면 주소를 다시 얻는다.
+        3. 각각의 n면 주소에서 가지고 있는 기사들 주소를 얻는다.
+        4. 기사들 주소에서 텍스트를 parsing 한다.
+        """
 
-        for parsing in journal_link:
-            news_url_parsing_result = parsing.get('href')
-            newspaper_link = self.NAVER_NEWS + news_url_parsing_result + self.NEWS_TYPE
-            journal_main_link_list.append(newspaper_link)
+        news_officelist = 'https://news.naver.com/main/officeList.nhn'
+        naver_news = 'https://news.naver.com/'
+        news_type = '&listType=paper'
+
+        press_list = []
+        press_soup = get_html(news_officelist)
+        press_front_info = press_soup.find_all('div', id="groupOfficeList")[0]
+        press_front_url = press_front_info.find_all('a', limit=10)
+
+        for parsing in press_front_url:
+            parsing_get = parsing.get('href')
+            press_url = f'{naver_news}{parsing_get}{news_type}'
+            press_list.append(press_url)
+
 
         journal_main_link_list = self._add_today_date(journal_main_link_list)
         news_paper = self._arrange_newspage_url(journal_main_link_list)
