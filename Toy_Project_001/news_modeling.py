@@ -12,28 +12,38 @@ warnings.filterwarnings(action='ignore')
 
 class NewsMining:
 
-    def __init__(self, file, topic_num=40):
-        self.news_file = file
+    def __init__(self, topic_num=40):
         self.topic_num = topic_num
 
-    def _extract_noun(self):
+    def arrange_articles(self, file_name):
+
+        articles = self._extract_noun(file_name)
+        cleaned_articles = self._clean_text(articles)
+
+        return cleaned_articles
+
+    def _extract_noun(self, txt_file):
         mecab = Mecab()
-        self.article_list = []
-        with open(self.news_file, 'r') as file:
+        article_list = []
+        with open(txt_file, 'r') as file:
             for article in file:
                 extracted_noun = mecab.nouns(article)
-                self.article_list.append(extracted_noun)
+                article_list.append(extracted_noun)
 
-    def _clean_text(self):
+        return article_list
+
+    def _clean_text(self, article):
         article_num = 0
-        for split_article in self.article_list:
-            self.article_list[article_num] = list(filter(lambda x: len(x) >= 2, split_article))
+        for split_article in article:
+            article[article_num] = list(filter(lambda x: len(x) >= 2, split_article))
             article_num += 1
 
-    def _adapt_stopwords(self):
-        """
-        불용어 단어는 추후 구해서 정리한다.
-        """
+        return article
+
+    # def _adapt_stopwords(self):
+    #     """
+    #     불용어 단어는 추후 구해서 정리한다.
+    #     """
 
     def _get_high_frequency_words(self):
         article_words = Counter()
