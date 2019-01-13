@@ -22,7 +22,7 @@ class DailyNewsCrawling:
     def get_news_url(self):
 
         """
-        1. 10개 신문사의 주소를 얻는다.
+        1. n개 신문사의 주소를 얻는다.(limit=10, 10개)
         2. 입력된 날짜를 주소에 추가하고 타입을 신문으로 설정한다.
         3. 10개의 주소에서 각 신문사별 n면 주소를 다시 얻는다.
         4. 각각의 n면 주소에서 가지고 있는 기사들 주소를 얻는다.
@@ -45,19 +45,9 @@ class DailyNewsCrawling:
 
         today_press = self._add_today_date(press_list)
         page_list = self._arrange_news_page_url(today_press)
+        news_url = self._get_news_url(page_list)
 
-)
-
-    def get_result(self):
-
-        parsing_url = self._get_news_url(self.news_page_result)
-        data_set = self._get_news_data_set(parsing_url)
-        # print(data_set)
-
-        self._save_file(self.OUTPUT_URL, parsing_url)
-        self._save_file(self.OUTPUT_TEXT, data_set)
-
-        print('result good')
+        return news_url
 
     def _add_today_date(self, press_list):
         week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
@@ -102,6 +92,51 @@ class DailyNewsCrawling:
 
         return parsing_page_list
 
+    def _get_news_url(self, press_section_list):
+
+        def get_uploaded_url(source):
+            news_url_collection = []
+            news_source_data = source.find_all('ul', class_="type13 firstlist")
+            for url_data in news_source_data:
+                url_source = url_data.select('a')
+                for parsing in url_source:
+                    news_url_parsing_result = parsing.get('href')
+                    if news_url_parsing_result not in news_url_collection:
+                        news_url_collection.append(news_url_parsing_result)
+
+            return news_url_collection
+
+        parsing_url = []
+
+        for press_sections in press_section_list:
+            for news_url in press_sections:
+                news_source = get_html(news_url)
+                news_url_source = get_uploaded_url(news_source)
+                parsing_url += news_url_source
+
+                break
+
+        parsing_url = list(OrderedDict.fromkeys(parsing_url))
+
+        return parsing_url
+
+    def get_result(self):
+
+        data_set = self._get_news_data_set(parsing_url)
+
+        self._save_file(self.OUTPUT_URL, parsing_url)
+        self._save_file(self.OUTPUT_TEXT, data_set)
+
+        print('result good')
+
+    def _get_news_data_set(self, parsing_url):
+        news_data = []
+        for news in parsing_url:
+            ret = self._parse_article(news)
+            news_data.append(ret)
+
+        return news_data
+
     def _save_file(self, name, input_data):
         with open(name, 'a', encoding='UTF-8') as f:
             for input_value in input_data:
@@ -141,39 +176,7 @@ class DailyNewsCrawling:
 
         return cleaned_text
 
-    def _get_uploaded_url(self, news_source):
-        news_url_collection = []
-        for url_data in news_source:
-            source = url_data.select('a')
-            for parsing in source:
-                news_url_parsing_result = parsing.get('href')
-                if news_url_parsing_result not in news_url_collection:
-                    news_url_collection.append(news_url_parsing_result)
 
-        return news_url_collection
-
-    def _get_news_url(self, news_page_result):
-        parsing_url = []
-
-        for news_url in news_page_result:
-            news_source = self._get_news_html(news_url)
-            news_source = news_source.find_all('ul', class_="type13 firstlist")
-            news_url_source = self._get_uploaded_url(news_source)
-            parsing_url += news_url_source
-
-            break
-
-        parsing_url = list(OrderedDict.fromkeys(parsing_url))
-
-        return parsing_url
-
-    def _get_news_data_set(self, parsing_url):
-        news_data = []
-        for news in parsing_url:
-            ret = self._parse_article(news)
-            news_data.append(ret)
-
-        return news_data
 
 
 if __name__ == '__main__':
