@@ -23,17 +23,18 @@ class DailyNewsCrawling:
 
         """
         1. 10개 신문사의 주소를 얻는다.
-        2. 10개의 주소에서 각 신문사별 n면 주소를 다시 얻는다.
-        3. 각각의 n면 주소에서 가지고 있는 기사들 주소를 얻는다.
-        4. 기사들 주소에서 텍스트를 parsing 한다.
+        2. 입력된 날짜를 주소에 추가하고 타입을 신문으로 설정한다.
+        3. 10개의 주소에서 각 신문사별 n면 주소를 다시 얻는다.
+        4. 각각의 n면 주소에서 가지고 있는 기사들 주소를 얻는다.
+        5. 기사들 주소에서 텍스트를 parsing 한다.
         """
 
-        news_officelist = 'https://news.naver.com/main/officeList.nhn'
+        news_office = 'https://news.naver.com/main/officeList.nhn'
         naver_news = 'https://news.naver.com/'
         news_type = '&listType=paper'
 
         press_list = []
-        press_soup = get_html(news_officelist)
+        press_soup = get_html(news_office)
         press_front_info = press_soup.find_all('div', id="groupOfficeList")[0]
         press_front_url = press_front_info.find_all('a', limit=10)
 
@@ -42,9 +43,10 @@ class DailyNewsCrawling:
             press_url = f'{naver_news}{parsing_get}{news_type}'
             press_list.append(press_url)
 
+        press_list = self._add_today_date(press_list)
+        news_paper = self._arrange_news_page_url(press_list)
 
-        journal_main_link_list = self._add_today_date(journal_main_link_list)
-        news_paper = self._arrange_newspage_url(journal_main_link_list)
+
         self.news_page_result = self._arrange_parsing_url(news_paper)
 
     def get_result(self):
@@ -58,11 +60,42 @@ class DailyNewsCrawling:
 
         print('result good')
 
-    def _get_news_html(self, url):
-        news_mainpage_info = requests.get(url)
-        news_page_soup = BeautifulSoup(news_mainpage_info.text, 'html.parser')
+    def _add_today_date(self, press_list):
+        week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
+        find_day = date(self.year, self.month, self.day).weekday()
+        if 'sun' == week[find_day]:
+            raise ValueError('sunday 뉴스는 구할 수 없습니다. 다른 날을 입력해 주세요.')
+        else:
+            search_date = f'&date{find_date}'
+        for num in range(len(press_list)):
+            press_list[num] = press_list[num] + search_date
 
-        return news_page_soup
+        return press_list
+
+    def _arrange_news_page_url(self, today_main_list):
+        news_paper_page_list = []
+        for journal_today_url in today_main_list:
+            ret = self._get_page_number(journal_today_url)
+            news_paper_page_list.append(ret)
+
+        return news_paper_page_list
+
+    def _get_page_number(self, today_url):
+        journal_main_dict = {}
+        journal_page = get_html(today_url)
+        parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
+        internal_page = parsing_page.find_all('a')
+
+        page_number_list = []
+        for parsing in internal_page:
+            parsing_result = parsing.get('href')
+            page_number = '&' + parsing_result.split('&')[-1]
+            page_number_list.append(page_number)
+
+        journal_main_dict[today_url] = page_number_list
+
+        return journal_main_dict
 
     def _save_file(self, name, input_data):
         with open(name, 'a', encoding='UTF-8') as f:
@@ -81,36 +114,6 @@ class DailyNewsCrawling:
             return 'None'
 
         return refined_text.rstrip()
-
-    def _get_page_number(self, journal_today_url):
-        journal_main_link_dict = {}
-        journal_page_soup = self._get_news_html(journal_today_url)
-        parsing_internal_page = journal_page_soup.find_all('div', class_='topbox_type6')
-        parsing_internal_page = parsing_internal_page[0]
-        internal_page = parsing_internal_page.find_all('a')
-
-        page_number_list = []
-        for parsing in internal_page:
-            parsing_result = parsing.get('href')
-            page_number = '&' + parsing_result.split('&')[-1]
-            page_number_list.append(page_number)
-
-        journal_main_link_dict[journal_today_url] = page_number_list
-
-        return journal_main_link_dict
-
-    def _add_today_date(self, press_list):
-        week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-        find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
-        find_day = date(self.year, self.month, self.day).weekday()
-        if 'sun' == week[find_day]:
-            raise ValueError('sunday 뉴스는 구할 수 없습니다. 다른 날을 입력해 주세요.')
-        else:
-            search_date = f'&date{find_date}'
-        for num in range(len(press_list)):
-            press_list[num] = press_list[num] + search_date
-
-        return press_list
 
     def _replace_unused_word(self, text):
 
@@ -132,14 +135,6 @@ class DailyNewsCrawling:
                               '', cleaned_text)
 
         return cleaned_text
-
-    def _arrange_newspage_url(self, journal_today_main_page):
-        newpaper_page_list = []
-        for journal_today_url in journal_today_main_page:
-            ret = self._get_page_number(journal_today_url)
-            newpaper_page_list.append(ret)
-
-        return newpaper_page_list
 
     def _arrange_parsing_url(self, news_paper):
         parsing_page_list = []
