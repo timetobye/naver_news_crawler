@@ -71,6 +71,9 @@ class DailyNewsCrawling:
         return news_paper_page_list
 
     def _get_page_number(self, today_url):
+        """
+        각 언론사별 뉴스 페이지(1면, 2면 ...n 면) 주소를 얻어내서 정리해주는 기능을 돕습니다.
+        """
         journal_main_dict = {}
         journal_page = get_html(today_url)
         parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
@@ -84,13 +87,13 @@ class DailyNewsCrawling:
 
         journal_main_dict[today_url] = page_number_list
 
-        parsing_page_list = []
+        press_section_list = []
         for url, page_list in journal_main_dict.items():
             for page_num in page_list:
                 ret = url + page_num
-                parsing_page_list.append(ret)
+                press_section_list.append(ret)
 
-        return parsing_page_list
+        return press_section_list
 
     def _get_news_url(self, press_section_list):
 
