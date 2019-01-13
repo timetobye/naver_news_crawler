@@ -1,16 +1,18 @@
 import gensim
 import warnings
+import os
 from konlpy.tag import Mecab
 from collections import Counter
 from gensim import corpora
 from gensim import models
+from gensim.models import LdaModel
 from pyLDAvis import gensim as gensimvis
 from pyLDAvis import display
 from pyLDAvis import save_html
 warnings.filterwarnings(action='ignore')
 
 
-class NewsMining:
+class NewsModeling:
 
     def __init__(self, topic_num=40):
         self.topic_num = topic_num
@@ -20,9 +22,27 @@ class NewsMining:
         articles = self._extract_noun(file_name)
         cleaned_articles = self._clean_text(articles)
         high_frequency_words = self._get_high_frequency_words(cleaned_articles)
-        train_data_set = self._filter_low_frequency_word(cleaned_articles, high_frequency_words)
+        data_set = self._filter_low_frequency_word(cleaned_articles,
+                                                   high_frequency_words)
 
-        return train_data_set
+        return data_set
+
+    def make_model(self, data_set):
+        self._make_word_dictionary(data_set)
+        self._make_doc_matrix(data_set)
+        news_model = self._make_gensim_model()
+
+        return news_model
+
+    def draw_news_model(self):
+        current_path = os.getcwd()
+        file_path = f'{current_path}{"/news_train_model.model"}'
+        model = LdaModel.load(file_path)
+        prepared_data = gensimvis.prepare(model,
+                                          self.doc_matrix,
+                                          self.news_dictionary)
+
+        save_html(prepared_data, "news_data.html")
 
     def _extract_noun(self, txt_file):
         mecab = Mecab()
@@ -72,38 +92,24 @@ class NewsMining:
 
         return article_list
 
-    # def _make_word_dictionary(self):
-    #     news_dictionary = corpora.Dictionary(self.article_list)
-    #     news_dictionary.save('news_dictionary.dict')
-    #     self.news_dictionary = news_dictionary
-    #
-    # def _make_doc_matrix(self):
-    #     doc_matrix = []
-    #     for doc in self.article_list:
-    #         doc2bow_result = self.news_dictionary.doc2bow(doc)
-    #         doc_matrix.append(doc2bow_result)
-    #
-    #     self.doc_matrix = doc_matrix
-    #     corpora.MmCorpus.serialize('news_corpus.mm', doc_matrix)
-    #
-    # def _make_gensim_model(self):
-    #     news_LDA = models.ldamodel.LdaModel
-    #     news_model = news_LDA(self.doc_matrix,
-    #                           num_topics = self.topic_num,
-    #                           id2word = self.news_dictionary,
-    #                           passes = 100)
-    #     news_model.save('news_train_file.model')
-    #
-    #     self.news_model = news_model
-    #
-    # def _draw_news_model(self):
-    #     prepared_data = gensimvis.prepare(self.news_model,
-    #                                       self.doc_matrix,
-    #                                       self.news_dictionary)
-    #
-    #     save_html(prepared_data, "news_data.html")
+    def _make_word_dictionary(self, train_data):
+        self.news_dictionary = corpora.Dictionary(train_data)
+        self.news_dictionary.save('news_dictionary.dict')
 
+    def _make_doc_matrix(self, train_data):
+        self.doc_matrix = []
+        for doc in train_data:
+            doc2bow_result = self.news_dictionary.doc2bow(doc)
+            self.doc_matrix.append(doc2bow_result)
 
-if __name__ == '__main__':
-    data = NewsMining()
-    train_data_set = data.arrange_articles('output_text.txt')
+        corpora.MmCorpus.serialize('news_corpus.mm', self.doc_matrix)
+
+    def _make_gensim_model(self):
+        news_lda = models.ldamodel.LdaModel
+        model = news_lda(self.doc_matrix,
+                         num_topics=self.topic_num,
+                         id2word=self.news_dictionary,
+                         passes=100)
+        model.save('news_train_model.model')
+
+        return model
