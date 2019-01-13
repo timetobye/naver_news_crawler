@@ -1,8 +1,10 @@
 import re
 import requests
+import warnings
 from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 from collections import OrderedDict
+warnings.filterwarnings(action='ignore')
 
 
 def get_html(url):
@@ -10,6 +12,12 @@ def get_html(url):
     page_soup = BeautifulSoup(pages.text, 'html.parser')
 
     return page_soup
+
+
+def save_file(name, input_data):
+    with open(name, 'a', encoding='UTF-8') as f:
+        for input_value in input_data:
+            f.write(input_value + '\n')
 
 
 class DailyNewsCrawling:
@@ -121,24 +129,20 @@ class DailyNewsCrawling:
 
         parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
+        output_url = 'output_url.txt'
+        save_file(output_url, parsing_url_list)
+
+        self.parsing_url_list = parsing_url_list
+
         return parsing_url_list
 
-    def get_news_text(self, parsing_url_list):
-
-        def save_file(name, input_data):
-            with open(name, 'a', encoding='UTF-8') as f:
-                for input_value in input_data:
-                    f.write(input_value + '\n')
-
-        output_url = 'output_url.txt'
-        output_text = 'output_text.txt'
-
+    def get_news_text(self):
         news_text_data = []
-        for parsing_url in parsing_url_list:
+        for parsing_url in self.parsing_url_list:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
 
-        save_file(output_url, parsing_url_list)
+        output_text = 'output_text.txt'
         save_file(output_text, news_text_data)
 
         return news_text_data
@@ -176,10 +180,3 @@ class DailyNewsCrawling:
             return 'None'
 
         return refined_text.rstrip()
-
-
-if __name__ == '__main__':
-    news = DailyNewsCrawling(2019, 1, 12)
-    news_url = news.get_news_url()
-    get_text = news.get_news_text(news_url)
-    print(get_text)
