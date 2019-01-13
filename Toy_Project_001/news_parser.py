@@ -43,11 +43,10 @@ class DailyNewsCrawling:
             press_url = f'{naver_news}{parsing_get}{news_type}'
             press_list.append(press_url)
 
-        press_list = self._add_today_date(press_list)
-        news_paper = self._arrange_news_page_url(press_list)
+        today_press = self._add_today_date(press_list)
+        page_list = self._arrange_news_page_url(today_press)
 
-
-        self.news_page_result = self._arrange_parsing_url(news_paper)
+)
 
     def get_result(self):
 
@@ -90,12 +89,18 @@ class DailyNewsCrawling:
         page_number_list = []
         for parsing in internal_page:
             parsing_result = parsing.get('href')
-            page_number = '&' + parsing_result.split('&')[-1]
+            page_number = f'{"&"}{parsing_result.split("&")[-1]}'
             page_number_list.append(page_number)
 
         journal_main_dict[today_url] = page_number_list
 
-        return journal_main_dict
+        parsing_page_list = []
+        for url, page_list in journal_main_dict.items():
+            for page_num in page_list:
+                ret = url + page_num
+                parsing_page_list.append(ret)
+
+        return parsing_page_list
 
     def _save_file(self, name, input_data):
         with open(name, 'a', encoding='UTF-8') as f:
@@ -135,16 +140,6 @@ class DailyNewsCrawling:
                               '', cleaned_text)
 
         return cleaned_text
-
-    def _arrange_parsing_url(self, news_paper):
-        parsing_page_list = []
-        for daily_page in news_paper:
-            for url, page_list in daily_page.items():
-                for page_num in page_list:
-                    ret = url + page_num
-                    parsing_page_list.append(ret)
-
-        return parsing_page_list
 
     def _get_uploaded_url(self, news_source):
         news_url_collection = []
