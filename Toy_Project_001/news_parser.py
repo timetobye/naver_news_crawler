@@ -57,6 +57,17 @@ class DailyNewsCrawling:
 
         return news_url
 
+    def get_news_text(self):
+        news_text_data = []
+        for parsing_url in self.parsing_url_list:
+            ret = self._parse_article(parsing_url)
+            news_text_data.append(ret)
+
+        output_text = 'output_text.txt'
+        save_file(output_text, news_text_data)
+
+        return news_text_data
+
     def _add_today_date(self, press_list):
         week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
         find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
@@ -135,17 +146,6 @@ class DailyNewsCrawling:
         self.parsing_url_list = parsing_url_list
 
         return parsing_url_list
-
-    def get_news_text(self):
-        news_text_data = []
-        for parsing_url in self.parsing_url_list:
-            ret = self._parse_article(parsing_url)
-            news_text_data.append(ret)
-
-        output_text = 'output_text.txt'
-        save_file(output_text, news_text_data)
-
-        return news_text_data
 
     def _parse_article(self, url):
         def replace_unused_word(text):
