@@ -3,13 +3,15 @@ from news_modeling import NewsModeling
 
 
 def save_news_text():
+    # scrapping news text file from 10 press company in Naver news.
     news = DailyNewsCrawling(2019, 1, 12)
     news.get_news_url()
     news.get_news_text()
 
 
 def save_news_modeling():
-    data = NewsMining()
+    # create a model from news_text and draw a graph using gensim model.
+    data = NewsModeling()
     train_data_set = data.arrange_articles('output_text.txt')
     data.make_model(train_data_set)
     data.draw_news_model()
