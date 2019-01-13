@@ -1,6 +1,6 @@
 import re
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 from collections import OrderedDict
 
@@ -116,70 +116,67 @@ class DailyNewsCrawling:
 
                 break
 
-        parsing_url = list(OrderedDict.fromkeys(parsing_url))
+        parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
-        return parsing_url
+        return parsing_url_list
 
-    def get_result(self):
+    def get_news_text(self, parsing_url_list):
 
-        data_set = self._get_news_data_set(parsing_url)
+        def save_file(name, input_data):
+            with open(name, 'a', encoding='UTF-8') as f:
+                for input_value in input_data:
+                    f.write(input_value + '\n')
 
-        self._save_file(self.OUTPUT_URL, parsing_url)
-        self._save_file(self.OUTPUT_TEXT, data_set)
+        output_url = 'output_url.txt'
+        output_text = 'output_text.txt'
 
-        print('result good')
+        news_text_data = []
+        for parsing_url in parsing_url_list:
+            ret = self._parse_article(parsing_url)
+            news_text_data.append(ret)
 
-    def _get_news_data_set(self, parsing_url):
-        news_data = []
-        for news in parsing_url:
-            ret = self._parse_article(news)
-            news_data.append(ret)
+        save_file(output_url, parsing_url_list)
+        save_file(output_text, news_text_data)
 
-        return news_data
-
-    def _save_file(self, name, input_data):
-        with open(name, 'a', encoding='UTF-8') as f:
-            for input_value in input_data:
-                f.write(input_value + '\n')
+        return news_text_data
 
     def _parse_article(self, url):
-        article_info = requests.get(url)
-        article_soup = BeautifulSoup(article_info.text, 'html.parser', from_encoding='utf-8')
+        def replace_unused_word(text):
+
+            def replace_all(sentence, dic):
+                for i, j in dic.items():
+                    sentence = sentence.replace(i, j)
+                return sentence
+
+            replace_words_dict = dict([("\n", ""),
+                                       ("ㆍ", ""),
+                                       ("▶", ""),
+                                       ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
+                                       ("/", ""),
+                                       ("무단전재 및 재배포 금지", "")])
+            text = replace_all(text, replace_words_dict)
+
+            cleaned_text = re.sub('[a-zA-Z]', "", text)
+            cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
+                                  '', cleaned_text)
+
+            return cleaned_text
+
+        article_html = requests.get(url)
+        article_soup = BeautifulSoup(article_html.text, 'html.parser', from_encoding='utf-8')
         article_search = article_soup.find_all('div', id="articleBodyContents")
         if len(article_search) > 0:
             text_with_html = article_search[0]
             unrefined_text = text_with_html.get_text()
-            refined_text = self._replace_unused_word(unrefined_text)
+            refined_text = replace_unused_word(unrefined_text)
         else:
             return 'None'
 
         return refined_text.rstrip()
 
-    def _replace_unused_word(self, text):
-
-        def replace_all(sentence, dic):
-            for i, j in dic.items():
-                sentence = sentence.replace(i, j)
-            return sentence
-
-        replace_words_dict = dict([("\n", ""),
-                                   ("ㆍ", ""),
-                                   ("▶", ""),
-                                   ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
-                                   ("/", ""),
-                                   ("무단전재 및 재배포 금지", "")])
-        text = replace_all(text, replace_words_dict)
-
-        cleaned_text = re.sub('[a-zA-Z]', "", text)
-        cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
-                              '', cleaned_text)
-
-        return cleaned_text
-
-
-
 
 if __name__ == '__main__':
-    news_ = DailyNewsCrawling()
-    news_.get_ten_journal_url()
-    news_.get_result()
+    news = DailyNewsCrawling(2019, 1, 12)
+    news_url = news.get_news_url()
+    get_text = news.get_news_text(news_url)
+    print(get_text)
