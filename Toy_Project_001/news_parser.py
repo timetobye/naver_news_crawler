@@ -59,13 +59,13 @@ class DailyNewsCrawling:
 
         today_press = self._add_today_date(press_list)
         page_list = self._arrange_news_page_url(today_press)
-        news_url = self._get_news_url(page_list)
+        parsing_news_url_list = self._get_news_url(page_list)
+        
+        return parsing_news_url_list
 
-        return news_url
-
-    def get_news_text(self):
+    def get_news_text(self, parsing_url_list):
         news_text_data = []
-        for parsing_url in self.parsing_url_list:
+        for parsing_url in parsing_url_list:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
         
