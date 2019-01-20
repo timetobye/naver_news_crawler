@@ -8,7 +8,7 @@ from gensim import models
 from gensim.models import LdaModel
 from pyLDAvis import gensim as gensimvis
 from pyLDAvis import display
-from pyLDAvis import save_html
+from pyLDAvis import save_html as lda_visualization
 warnings.filterwarnings(action='ignore')
 
 
@@ -16,6 +16,13 @@ def save_model_data(name, folder_name='lda_model'):
     folder_path = f'{os.getcwd()}{"/"}{folder_name}'
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+    file_path = os.path.join(folder_path, name)
+
+    return file_path
+
+
+def load_model_data(name, folder_name='lda_model'):
+    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
     file_path = os.path.join(folder_path, name)
 
     return file_path
@@ -35,22 +42,19 @@ class NewsModeling:
 
         return data_list
 
-    def make_model(self, data_list):
+    def make_lda_model(self, data_list):
         self._make_word_dictionary(data_list)
         self._make_doc_matrix(data_list)
-        news_model = self._make_gensim_model()
+        self._make_gensim_model()
 
-        return news_model
-
-    def draw_news_model(self):
-        current_path = os.getcwd()
-        file_path = f'{current_path}{"/news_train_model.model"}'
+    def make_lda_visualization(self):
+        file_path = load_model_data('news_train_model.model')
         model = LdaModel.load(file_path)
-        prepared_data = gensimvis.prepare(model,
-                                          self.doc_matrix,
-                                          self.news_dictionary)
-
-        save_html(prepared_data, "news_data.html")
+        lda_prepared_data = gensimvis.prepare(model,
+                                              self.doc_matrix,
+                                              self.news_dictionary)
+        
+        lda_visualization(lda_prepared_data, "news_lda_topic_modeling.html")
 
     def _extract_noun(self, news_text_list):
         mecab = Mecab()
@@ -87,13 +91,14 @@ class NewsModeling:
     def _filter_low_frequency_word(self, article_list, high_frequency_words):
         article_num = 0
         compare_words_set = Counter(high_frequency_words)
+        
         for article in article_list:
             count_result_list = []
             article_counter = Counter(article)
             count_result = article_counter & compare_words_set
+            
             for word, value in count_result.items():
                 count_result_list.append(word)
-
             article_list[article_num] = count_result_list
             article_num += 1
 
@@ -101,6 +106,7 @@ class NewsModeling:
 
     def _make_word_dictionary(self, train_data):
         self.news_dictionary = corpora.Dictionary(train_data)
+        
         news_dict_file_name = save_model_data('news_dictionary.dict')
         self.news_dictionary.save(news_dict_file_name)
 
