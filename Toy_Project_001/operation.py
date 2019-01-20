@@ -14,7 +14,7 @@ def get_news_text_list(year, month, day):
 
 def make_lda_model_with_news(news_text, topic_num=10):
     # make a lda model from news and draw a topic modeling graph.
-    data = NewsModeling()
+    data = NewsModeling(topic_num)
     train_data_set = data.make_train_news_data_list(news_text)
     data.make_lda_model(train_data_set)
     data.make_lda_visualization()
