@@ -16,12 +16,12 @@ def get_html(url):
 
 
 def save_news_data(name, input_data, folder_name='news'):
-    new_path = f'{os.getcwd()}{"/"}{folder_name}'
-    if not os.path.exists(new_path):
-        os.makedirs(new_path)
-    current_path = os.path.join(new_path, name)
+    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    file_path = os.path.join(folder_path, name)
 
-    with open(current_path, 'a', encoding='UTF-8') as f:
+    with open(file_path, 'a', encoding='UTF-8') as f:
         for input_value in input_data:
             f.write(input_value + '\n')
 
@@ -69,8 +69,8 @@ class DailyNewsCrawling:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
         
-        today_news_text = f'{self.find_date}{"_news_text_file"}{".txt"}'
-        save_news_data(today_news_text, news_text_data)
+        today_news_text_file_name = f'{self.find_date}{"_news_text_file"}{".txt"}'
+        save_news_data(today_news_text_file_name, news_text_data)
 
         return news_text_data
 
@@ -122,9 +122,9 @@ class DailyNewsCrawling:
 
     def _get_news_url(self, press_section_list):
 
-        def get_uploaded_url(source):
+        def get_uploaded_url(html_source):
             news_url_collection = []
-            news_source_data = source.find_all('ul', class_="type13 firstlist")
+            news_source_data = html_source.find_all('ul', class_="type13 firstlist")
             for url_data in news_source_data:
                 url_source = url_data.select('a')
                 for parsing in url_source:
@@ -138,16 +138,16 @@ class DailyNewsCrawling:
 
         for press_sections in press_section_list:
             for news_url in press_sections:
-                news_source = get_html(news_url)
-                news_url_source = get_uploaded_url(news_source)
+                html_news_source = get_html(news_url)
+                news_url_source = get_uploaded_url(html_news_source)
                 parsing_url += news_url_source
 
                 break
 
         parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
-        today_news_url = f'{self.find_date}{"_news_url_file"}{".txt"}'
-        save_news_data(today_news_url, parsing_url_list)
+        today_news_url_file_name = f'{self.find_date}{"_news_url_file"}{".txt"}'
+        save_news_data(today_news_url_file_name, parsing_url_list)
 
         self.parsing_url_list = parsing_url_list
 
