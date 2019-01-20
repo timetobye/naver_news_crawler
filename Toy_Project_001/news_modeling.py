@@ -17,15 +17,14 @@ class NewsModeling:
     def __init__(self, topic_num=40):
         self.topic_num = topic_num
 
-    def arrange_articles(self, file_name):
-
-        articles = self._extract_noun(file_name)
+    def make_train_news_data_list(self, news_text_list):
+        articles = self._extract_noun(news_text_list)
         cleaned_articles = self._clean_text(articles)
         high_frequency_words = self._get_high_frequency_words(cleaned_articles)
-        data_set = self._filter_low_frequency_word(cleaned_articles,
-                                                   high_frequency_words)
+        data_list = self._filter_low_frequency_word(cleaned_articles,
+                                                    high_frequency_words)
 
-        return data_set
+        return data_list
 
     def make_model(self, data_set):
         self._make_word_dictionary(data_set)
@@ -44,13 +43,12 @@ class NewsModeling:
 
         save_html(prepared_data, "news_data.html")
 
-    def _extract_noun(self, txt_file):
+    def _extract_noun(self, news_text_list):
         mecab = Mecab()
         article_list = []
-        with open(txt_file, 'r') as file:
-            for article in file:
-                extracted_noun = mecab.nouns(article)
-                article_list.append(extracted_noun)
+        for article in news_text_list:
+            extracted_noun = mecab.nouns(article)
+            article_list.append(extracted_noun)
 
         return article_list
 
