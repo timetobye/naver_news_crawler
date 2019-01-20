@@ -3,7 +3,7 @@ from news_parser import DailyNewsCrawling
 from news_modeling import NewsModeling
 
 
-def get_news(year, month, day):
+def get_news_text_list(year, month, day):
     # scrapping news text file from 10 press company in Naver news.
     news = DailyNewsCrawling(year, month, day)
     news_url_list = news.get_news_url()
@@ -12,7 +12,7 @@ def get_news(year, month, day):
     return news_text_list
     
 
-def make_lda_model_with_news(news_text, topic_num=40):
+def make_lda_model_with_news(news_text, topic_num=10):
     # make a lda model from news and draw a topic modeling graph.
     data = NewsModeling()
     train_data_set = data.make_train_news_data_list(news_text)
@@ -25,7 +25,7 @@ def make_lda_model_with_news(news_text, topic_num=40):
 def main():
     year, month, day = args.year, args.month, args.day
     topic_num = args.topic_num
-    news_text_list = get_news(year, month, day)
+    news_text_list = get_news_text_list(year, month, day)
     ret = make_lda_model_with_news(news_text_list, topic_num)
 
 

@@ -14,12 +14,12 @@ warnings.filterwarnings(action='ignore')
 
 class NewsModeling:
 
-    def __init__(self, topic_num=40):
+    def __init__(self, topic_num=10):
         self.topic_num = topic_num
 
     def make_train_news_data_list(self, news_text_list):
         articles = self._extract_noun(news_text_list)
-        cleaned_articles = self._clean_text(articles)
+        cleaned_articles = self._delete_single_word(articles)
         high_frequency_words = self._get_high_frequency_words(cleaned_articles)
         data_list = self._filter_low_frequency_word(cleaned_articles,
                                                     high_frequency_words)
@@ -52,13 +52,13 @@ class NewsModeling:
 
         return article_list
 
-    def _clean_text(self, article):
+    def _delete_single_word(self, article_list):
         article_num = 0
-        for split_article in article:
-            article[article_num] = list(filter(lambda x: len(x) >= 2, split_article))
+        for split_article in article_list:
+            article_list[article_num] = list(filter(lambda x: len(x) >= 2, split_article))
             article_num += 1
 
-        return article
+        return article_list
 
     # def _adapt_stopwords(self):
     #     """
