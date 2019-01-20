@@ -121,25 +121,12 @@ class DailyNewsCrawling:
         return press_section_list
 
     def _get_news_url(self, press_section_list):
-
-        def get_uploaded_url(html_source):
-            news_url_collection = []
-            news_source_data = html_source.find_all('ul', class_="type13 firstlist")
-            for url_data in news_source_data:
-                url_source = url_data.select('a')
-                for parsing in url_source:
-                    news_url_parsing_result = parsing.get('href')
-                    if news_url_parsing_result not in news_url_collection:
-                        news_url_collection.append(news_url_parsing_result)
-
-            return news_url_collection
-
         parsing_url = []
 
         for press_sections in press_section_list:
             for news_url in press_sections:
                 html_news_source = get_html(news_url)
-                news_url_source = get_uploaded_url(html_news_source)
+                news_url_source = self._get_uploaded_url(html_news_source)
                 parsing_url += news_url_source
 
                 break
@@ -152,6 +139,18 @@ class DailyNewsCrawling:
         self.parsing_url_list = parsing_url_list
 
         return parsing_url_list
+    
+    def _get_uploaded_url(self, html_source):
+        news_url_collection = []
+        news_source_data = html_source.find_all('ul', class_="type13 firstlist")
+        for url_data in news_source_data:
+            url_source = url_data.select('a')
+            for parsing in url_source:
+                news_url_parsing_result = parsing.get('href')
+                if news_url_parsing_result not in news_url_collection:
+                    news_url_collection.append(news_url_parsing_result)
+
+        return news_url_collection
 
     def _parse_article(self, url):
         article_html = requests.get(url)
