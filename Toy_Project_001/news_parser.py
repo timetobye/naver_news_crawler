@@ -1,6 +1,7 @@
 import re
 import requests
 import warnings
+import os
 from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 from collections import OrderedDict
@@ -14,8 +15,13 @@ def get_html(url):
     return page_soup
 
 
-def save_file(name, input_data):
-    with open(name, 'a', encoding='UTF-8') as f:
+def save_news_data(name, input_data, folder_name='news'):
+    new_path = f'{os.getcwd()}{"/"}{folder_name}'
+    if not os.path.exists(new_path):
+        os.makedirs(new_path)
+    current_path = os.path.join(new_path, name)
+
+    with open(current_path, 'a', encoding='UTF-8') as f:
         for input_value in input_data:
             f.write(input_value + '\n')
 
@@ -62,20 +68,20 @@ class DailyNewsCrawling:
         for parsing_url in self.parsing_url_list:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
-
-        output_text = 'output_text.txt'
-        save_file(output_text, news_text_data)
+        
+        today_news_text = f'{self.find_date}{"_news_text_file"}{".txt"}'
+        save_news_data(today_news_text, news_text_data)
 
         return news_text_data
 
     def _add_today_date(self, press_list):
         week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-        find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
+        self.find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
         find_day = date(self.year, self.month, self.day).weekday()
         if 'sun' == week[find_day]:
             raise ValueError('sunday 뉴스는 구할 수 없습니다. 다른 날을 입력해 주세요.')
         else:
-            search_date = f'&date{find_date}'
+            search_date = f'&date{self.find_date}'
         for num in range(len(press_list)):
             press_list[num] = press_list[num] + search_date
 
@@ -140,8 +146,8 @@ class DailyNewsCrawling:
 
         parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
-        output_url = 'output_url.txt'
-        save_file(output_url, parsing_url_list)
+        today_news_url = f'{self.find_date}{"_news_url_file"}{".txt"}'
+        save_news_data(today_news_url, parsing_url_list)
 
         self.parsing_url_list = parsing_url_list
 
