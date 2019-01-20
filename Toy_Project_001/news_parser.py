@@ -81,10 +81,10 @@ class DailyNewsCrawling:
 
         return press_list
 
-    def _arrange_news_page_url(self, today_main_list):
+    def _arrange_news_page_url(self, today_press_main_page_list):
         news_paper_page_list = []
-        for journal_today_url in today_main_list:
-            ret = self._get_page_number(journal_today_url)
+        for press_main_page in today_press_main_page_list:
+            ret = self._get_page_number(press_main_page)
             news_paper_page_list.append(ret)
 
         return news_paper_page_list
@@ -148,35 +148,35 @@ class DailyNewsCrawling:
         return parsing_url_list
 
     def _parse_article(self, url):
-        def replace_unused_word(text):
-
-            def replace_all(sentence, dic):
-                for i, j in dic.items():
-                    sentence = sentence.replace(i, j)
-                return sentence
-
-            replace_words_dict = dict([("\n", ""),
-                                       ("ㆍ", ""),
-                                       ("▶", ""),
-                                       ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
-                                       ("/", ""),
-                                       ("무단전재 및 재배포 금지", "")])
-            text = replace_all(text, replace_words_dict)
-
-            cleaned_text = re.sub('[a-zA-Z]', "", text)
-            cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
-                                  '', cleaned_text)
-
-            return cleaned_text
-
         article_html = requests.get(url)
         article_soup = BeautifulSoup(article_html.text, 'html.parser', from_encoding='utf-8')
         article_search = article_soup.find_all('div', id="articleBodyContents")
         if len(article_search) > 0:
             text_with_html = article_search[0]
             unrefined_text = text_with_html.get_text()
-            refined_text = replace_unused_word(unrefined_text)
+            refined_text = self._clean_text(unrefined_text)
         else:
             return 'None'
 
         return refined_text.rstrip()
+
+    def _clean_text(self, text):
+
+        def replace_unnecessary_word(sentence, dic):
+            for i, j in dic.items():
+                sentence = sentence.replace(i, j)
+            return sentence
+
+        replace_words_dict = dict([("\n", ""),
+                                   ("ㆍ", ""),
+                                   ("▶", ""),
+                                   ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
+                                   ("/", ""),
+                                   ("무단전재 및 재배포 금지", "")])
+        text = replace_unnecessary_word(text, replace_words_dict)
+
+        cleaned_text = re.sub('[a-zA-Z]', "", text)
+        cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
+                              '', cleaned_text)
+
+        return cleaned_text
