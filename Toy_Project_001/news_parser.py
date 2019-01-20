@@ -1,6 +1,7 @@
 import re
 import requests
 import warnings
+import os
 from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 from collections import OrderedDict
@@ -14,8 +15,13 @@ def get_html(url):
     return page_soup
 
 
-def save_file(name, input_data):
-    with open(name, 'a', encoding='UTF-8') as f:
+def save_news_data(name, input_data, folder_name='news'):
+    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    file_path = os.path.join(folder_path, name)
+
+    with open(file_path, 'a', encoding='UTF-8') as f:
         for input_value in input_data:
             f.write(input_value + '\n')
 
@@ -53,38 +59,38 @@ class DailyNewsCrawling:
 
         today_press = self._add_today_date(press_list)
         page_list = self._arrange_news_page_url(today_press)
-        news_url = self._get_news_url(page_list)
+        parsing_news_url_list = self._get_news_url(page_list)
+        
+        return parsing_news_url_list
 
-        return news_url
-
-    def get_news_text(self):
+    def get_news_text(self, parsing_url_list):
         news_text_data = []
-        for parsing_url in self.parsing_url_list:
+        for parsing_url in parsing_url_list:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
-
-        output_text = 'output_text.txt'
-        save_file(output_text, news_text_data)
+        
+        today_news_text_file_name = f'{self.find_date}{"_news_text_file"}{".txt"}'
+        save_news_data(today_news_text_file_name, news_text_data)
 
         return news_text_data
 
     def _add_today_date(self, press_list):
         week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-        find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
+        self.find_date = date(self.year, self.month, self.day).strftime("%Y%m%d")
         find_day = date(self.year, self.month, self.day).weekday()
         if 'sun' == week[find_day]:
             raise ValueError('sunday 뉴스는 구할 수 없습니다. 다른 날을 입력해 주세요.')
         else:
-            search_date = f'&date{find_date}'
+            search_date = f'&date{self.find_date}'
         for num in range(len(press_list)):
             press_list[num] = press_list[num] + search_date
 
         return press_list
 
-    def _arrange_news_page_url(self, today_main_list):
+    def _arrange_news_page_url(self, today_press_main_page_list):
         news_paper_page_list = []
-        for journal_today_url in today_main_list:
-            ret = self._get_page_number(journal_today_url)
+        for press_main_page in today_press_main_page_list:
+            ret = self._get_page_number(press_main_page)
             news_paper_page_list.append(ret)
 
         return news_paper_page_list
@@ -115,68 +121,67 @@ class DailyNewsCrawling:
         return press_section_list
 
     def _get_news_url(self, press_section_list):
-
-        def get_uploaded_url(source):
-            news_url_collection = []
-            news_source_data = source.find_all('ul', class_="type13 firstlist")
-            for url_data in news_source_data:
-                url_source = url_data.select('a')
-                for parsing in url_source:
-                    news_url_parsing_result = parsing.get('href')
-                    if news_url_parsing_result not in news_url_collection:
-                        news_url_collection.append(news_url_parsing_result)
-
-            return news_url_collection
-
         parsing_url = []
 
         for press_sections in press_section_list:
             for news_url in press_sections:
-                news_source = get_html(news_url)
-                news_url_source = get_uploaded_url(news_source)
+                html_news_source = get_html(news_url)
+                news_url_source = self._get_uploaded_url(html_news_source)
                 parsing_url += news_url_source
 
                 break
 
         parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
-        output_url = 'output_url.txt'
-        save_file(output_url, parsing_url_list)
+        today_news_url_file_name = f'{self.find_date}{"_news_url_file"}{".txt"}'
+        save_news_data(today_news_url_file_name, parsing_url_list)
 
         self.parsing_url_list = parsing_url_list
 
         return parsing_url_list
+    
+    def _get_uploaded_url(self, html_source):
+        news_url_collection = []
+        news_source_data = html_source.find_all('ul', class_="type13 firstlist")
+        for url_data in news_source_data:
+            url_source = url_data.select('a')
+            for parsing in url_source:
+                news_url_parsing_result = parsing.get('href')
+                if news_url_parsing_result not in news_url_collection:
+                    news_url_collection.append(news_url_parsing_result)
+
+        return news_url_collection
 
     def _parse_article(self, url):
-        def replace_unused_word(text):
-
-            def replace_all(sentence, dic):
-                for i, j in dic.items():
-                    sentence = sentence.replace(i, j)
-                return sentence
-
-            replace_words_dict = dict([("\n", ""),
-                                       ("ㆍ", ""),
-                                       ("▶", ""),
-                                       ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
-                                       ("/", ""),
-                                       ("무단전재 및 재배포 금지", "")])
-            text = replace_all(text, replace_words_dict)
-
-            cleaned_text = re.sub('[a-zA-Z]', "", text)
-            cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
-                                  '', cleaned_text)
-
-            return cleaned_text
-
         article_html = requests.get(url)
         article_soup = BeautifulSoup(article_html.text, 'html.parser', from_encoding='utf-8')
         article_search = article_soup.find_all('div', id="articleBodyContents")
         if len(article_search) > 0:
             text_with_html = article_search[0]
             unrefined_text = text_with_html.get_text()
-            refined_text = replace_unused_word(unrefined_text)
+            refined_text = self._clean_text(unrefined_text)
         else:
             return 'None'
 
         return refined_text.rstrip()
+
+    def _clean_text(self, text):
+
+        def replace_unnecessary_word(sentence, dic):
+            for i, j in dic.items():
+                sentence = sentence.replace(i, j)
+            return sentence
+
+        replace_words_dict = dict([("\n", ""),
+                                   ("ㆍ", ""),
+                                   ("▶", ""),
+                                   ("flash 오류를 우회하기 위한 함수 추가function _flash_removeCallback() {}", ""),
+                                   ("/", ""),
+                                   ("무단전재 및 재배포 금지", "")])
+        text = replace_unnecessary_word(text, replace_words_dict)
+
+        cleaned_text = re.sub('[a-zA-Z]', "", text)
+        cleaned_text = re.sub('[\{\}\[\]\/?;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]',
+                              '', cleaned_text)
+
+        return cleaned_text
