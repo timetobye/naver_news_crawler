@@ -12,6 +12,15 @@ from pyLDAvis import save_html
 warnings.filterwarnings(action='ignore')
 
 
+def save_model_data(name, folder_name='lda_model'):
+    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    file_path = os.path.join(folder_path, name)
+
+    return file_path
+
+
 class NewsModeling:
 
     def __init__(self, topic_num=10):
@@ -26,9 +35,9 @@ class NewsModeling:
 
         return data_list
 
-    def make_model(self, data_set):
-        self._make_word_dictionary(data_set)
-        self._make_doc_matrix(data_set)
+    def make_model(self, data_list):
+        self._make_word_dictionary(data_list)
+        self._make_doc_matrix(data_list)
         news_model = self._make_gensim_model()
 
         return news_model
@@ -92,7 +101,8 @@ class NewsModeling:
 
     def _make_word_dictionary(self, train_data):
         self.news_dictionary = corpora.Dictionary(train_data)
-        self.news_dictionary.save('news_dictionary.dict')
+        news_dict_file_name = save_model_data('news_dictionary.dict')
+        self.news_dictionary.save(news_dict_file_name)
 
     def _make_doc_matrix(self, train_data):
         self.doc_matrix = []
@@ -100,7 +110,8 @@ class NewsModeling:
             doc2bow_result = self.news_dictionary.doc2bow(doc)
             self.doc_matrix.append(doc2bow_result)
 
-        corpora.MmCorpus.serialize('news_corpus.mm', self.doc_matrix)
+        doc_matrix_file_name = save_model_data('news_corpus.mm')
+        corpora.MmCorpus.serialize(doc_matrix_file_name, self.doc_matrix)
 
     def _make_gensim_model(self):
         news_lda = models.ldamodel.LdaModel
@@ -108,6 +119,8 @@ class NewsModeling:
                          num_topics=self.topic_num,
                          id2word=self.news_dictionary,
                          passes=100)
-        model.save('news_train_model.model')
+        
+        model_file_name = save_model_data('news_train_model.model')
+        model.save(model_file_name)
 
         return model
