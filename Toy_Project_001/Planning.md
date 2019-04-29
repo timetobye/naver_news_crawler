@@ -72,6 +72,7 @@ Daily News crawler & Topic Modeling
 * crawler를 이용한 10대 뉴스 저장 : 1일
 * text nlp 처리 : 1일
 * topic modeling 처리 후 시각화 : 1일
+* 작업 재시작 예정 날짜 : 2019/05/01~
 -----------------------------------
 
 ## Project 작업 환경(where)
