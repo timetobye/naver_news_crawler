@@ -1,6 +1,3 @@
-Toy_Project_001
-===================================
-
 Daily News crawler & Topic Modeling
 -----------------------------------
 
@@ -12,7 +9,8 @@ Daily News crawler & Topic Modeling
 ## Project 배경(why)
 
 * 10대 일간지 뉴스를 다 보고 싶은 마음이 있다.
-* 물리적으로 시간을 낼 수 없다. 그래서 키워드 추출 프로그래밍 작업을 통해 간접적으로 뉴스 파악
+* 물리적으로 시간을 낼 수 없다. ~~돈도 없다~~
+* 그래서 키워드 추출 프로그래밍 작업을 통해 간접적으로 뉴스 파악하기로 했다.
 -----------------------------------
 
 ## Project 목적(what)
@@ -65,6 +63,7 @@ Daily News crawler & Topic Modeling
 * konlpy : https://konlpy-ko.readthedocs.io/ko/v0.4.3/
 * gensim : https://radimrehurek.com/gensim/
 * pyLDAvis : https://github.com/bmabey/pyLDAvis
+* mecab : $ bash <(curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh)
 -----------------------------------
 
 ## Project 예상 소요 시간(1일 = 8시간 기준)
@@ -72,7 +71,6 @@ Daily News crawler & Topic Modeling
 * crawler를 이용한 10대 뉴스 저장 : 1일
 * text nlp 처리 : 1일
 * topic modeling 처리 후 시각화 : 1일
-* 작업 재시작 예정 날짜 : 2019/05/01~
 -----------------------------------
 
 ## Project 작업 환경(where)
