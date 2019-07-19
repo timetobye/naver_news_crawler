@@ -29,4 +29,23 @@ naver_news_crawler
 데이터 분석과 개발을 배우면서 처음 했던 Toy project였기 때문에 혼자 하는 것이 쉽지 않았지만 무척 즐거웠습니다.
 ~~크리스마스에 솔로라 작업을 했었던 기억~~ 바쁜 시간에도 코드를 봐주시고 조언을 해주신 bloodwind 님께 항상 감사드립니다.
 
+:keyboard: 설치방법
+-------------
+mecab을 사용하고 있기 때문에 Mac 환경에서만 사용 가능합니다.
 
+### mecab 설치
+```
+bash <(curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh)
+```
+
+### library
+```
+pip install -r requirements.txt
+```
+
+### 주의 사항
+- library 설치 시 오류가 발생할 경우 에러 메시지로 검색하여 대응해주시기 바랍니다.
+
+
+:desktop_computer: 사용 방법
+-----------------------------
