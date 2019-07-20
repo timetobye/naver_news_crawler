@@ -58,7 +58,7 @@ mecab과 library 설치 후 아래의 명령어를 실행합니다.
 
 
 :robot: example run code
-```python3
+```bash
 python3 news_crawler.py --year 2019, --month 07 --day 19 -topic 30
 ```
 
