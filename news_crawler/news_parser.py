@@ -90,8 +90,12 @@ class DailyNewsCrawling:
     def _arrange_news_page_url(self, today_press_main_page_list):
         news_paper_page_list = []
         for press_main_page in today_press_main_page_list:
-            ret = self._get_page_number(press_main_page)
-            news_paper_page_list.append(ret)
+            try:
+                ret = self._get_page_number(press_main_page)
+                news_paper_page_list.append(ret)
+            except Exception as e:
+                print(e)
+                continue
 
         return news_paper_page_list
 
@@ -101,8 +105,11 @@ class DailyNewsCrawling:
         """
         journal_main_dict = {}
         journal_page = get_html(today_url)
+        # parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
         parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
+        # print(type(parsing_page))
         internal_page = parsing_page.find_all('a')
+        # print('되나?')
 
         page_number_list = []
         for parsing in internal_page:
