@@ -29,9 +29,14 @@ naver_news_crawler
 데이터 분석과 개발을 배우면서 처음 했던 Toy project였기 때문에 혼자 하는 것이 쉽지 않았지만 무척 즐거웠습니다.
 ~~크리스마스에 솔로라 작업을 했었던 기억~~ 바쁜 시간에도 코드를 봐주시고 조언을 해주신 bloodwind 님께 항상 감사드립니다.
 
-:keyboard: 설치방법
+:keyboard: 설치 방법
 -------------
-mecab을 사용하고 있기 때문에 Mac 환경에서만 사용 가능합니다.
+기본적으로 Git이 설치되있다고 가정하고 아래의 코드를 터미널에서 실행해주세요.
+```
+git clone https://github.com/timetobye/naver_news_crawler.git
+``` 
+
+mecab을 설치합니다.(Mac OS에서만 가능합니다)
 
 ### mecab 설치
 ```
@@ -49,3 +54,32 @@ pip install -r requirements.txt
 
 :desktop_computer: 사용 방법
 -----------------------------
+mecab과 library 설치 후 아래의 명령어를 실행합니다.
+
+
+:robot: example run code
+```python3
+python3 news_crawler.py --year 2019, --month 07 --day 19 -topic 30
+```
+
+:building_construction: 상세 설명
+argument 값으로 **year**, **month**, **day**, **topic_num** 를 받습니다.
+예시로 작성된 코드와 같이 입력해주시면 됩니다.
+
+:open_file_folder: Directory structure
+------------
+``` bash
+  |-news-crawler                           #뉴스 크롤링 폴더
+  |  |-news_crawler.py                     #뉴스 크롤러 실행
+  |  |-news_parser.py                      #네이버 페이지에서 뉴스 parsing
+  |  |-news_modeling.py                    #parsing 결과를 이용해서 topic_modeling
+  |  |-news                                #parsing한 뉴스 url과 결과를 저장
+  |  |-Lda_model                           #modeling 결과 저장
+  |-README.md                              #README.md
+```
+
+:memo: To-Do list
+------------------
+- [ ] mecab 대신 KAKAO Khaiii로 교체
+- [ ] 교체 후 사전 추가
+- [ ] 추가 된 사전으로 재구동
