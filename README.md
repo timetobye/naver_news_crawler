@@ -66,6 +66,12 @@ python3 news_crawler.py --year 2019, --month 07 --day 19 -topic 30
 argument 값으로 **year**, **month**, **day**, **topic_num** 를 받습니다.
 예시로 작성된 코드와 같이 입력해주시면 됩니다.
 
+
+:notebook_with_decorative_cover: example result
+-------------------------------------
+![alt text](https://github.com/timetobye/naver_news_crawler/blob/master/news_crawler/example_image.gif)
+
+
 :open_file_folder: Directory structure
 ------------
 ``` bash
@@ -83,3 +89,8 @@ argument 값으로 **year**, **month**, **day**, **topic_num** 를 받습니다.
 - [ ] mecab 대신 KAKAO Khaiii로 교체
 - [ ] 교체 후 사전 추가
 - [ ] 추가 된 사전으로 재구동
+
+:man_technologist: Contact
+```
+github : https://github.com/timetobye
+```
