@@ -16,7 +16,7 @@ def get_html(url):
 
 
 def save_news_data(name, input_data, folder_name='news'):
-    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    folder_path = f'{os.getcwd()}{os.sep}{folder_name}'
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     file_path = os.path.join(folder_path, name)
@@ -69,7 +69,7 @@ class DailyNewsCrawling:
             ret = self._parse_article(parsing_url)
             news_text_data.append(ret)
         
-        today_news_text_file_name = f'{self.find_date}{"_news_text_file"}{".txt"}'
+        today_news_text_file_name = f'{self.find_date}_news_text_file.txt'
         save_news_data(today_news_text_file_name, news_text_data)
 
         return news_text_data
@@ -105,11 +105,8 @@ class DailyNewsCrawling:
         """
         journal_main_dict = {}
         journal_page = get_html(today_url)
-        # parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
         parsing_page = journal_page.find_all('div', class_='topbox_type6')[0]
-        # print(type(parsing_page))
         internal_page = parsing_page.find_all('a')
-        # print('되나?')
 
         page_number_list = []
         for parsing in internal_page:
@@ -140,7 +137,7 @@ class DailyNewsCrawling:
 
         parsing_url_list = list(OrderedDict.fromkeys(parsing_url))
 
-        today_news_url_file_name = f'{self.find_date}{"_news_url_file"}{".txt"}'
+        today_news_url_file_name = f'{self.find_date}_news_url_file.txt'
         save_news_data(today_news_url_file_name, parsing_url_list)
 
         self.parsing_url_list = parsing_url_list

@@ -52,3 +52,8 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
     main()
+
+
+"""
+python3 news_crawler.py --year 2019 --month 12 --day 23 -topic 10
+"""

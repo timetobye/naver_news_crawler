@@ -7,13 +7,12 @@ from gensim import corpora
 from gensim import models
 from gensim.models import LdaModel
 from pyLDAvis import gensim as gensimvis
-from pyLDAvis import display
 from pyLDAvis import save_html as lda_visualization
 warnings.filterwarnings(action='ignore')
 
 
 def save_model_data(name, folder_name='lda_model'):
-    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    folder_path = f'{os.getcwd()}{os.sep}{folder_name}'
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     file_path = os.path.join(folder_path, name)
@@ -22,7 +21,7 @@ def save_model_data(name, folder_name='lda_model'):
 
 
 def load_model_data(name, folder_name='lda_model'):
-    folder_path = f'{os.getcwd()}{"/"}{folder_name}'
+    folder_path = f'{os.getcwd()}{os.sep}{folder_name}'
     file_path = os.path.join(folder_path, name)
 
     return file_path
